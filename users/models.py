@@ -4,6 +4,7 @@ from django.db import models
 import MySQLdb
 from MySQLdb import cursors
 # Create your models here.
+from users.dbuntils import execute_mysql
 
 # conn = MySQLdb.connect(host='127.0.0.1', port=3306, user='root', passwd='redhat', db='cmdb',charset='utf8')
 # daya_user = conn.cursor()
@@ -37,63 +38,25 @@ sql_passwd = '''
             where id=%s;
             '''
 def get_users():
-    conn = MySQLdb.connect(host=MYSQL_HOST, port=MYSQL_PORT, user=MYSQL_USER, passwd=MYSQL_PASSWD, db=MYSQL_DB, charset=CHARSET)
-    cur = conn.cursor(cursors.DictCursor)
-    print(cur)
-    cur.execute(sql_list)
-    resutl = cur.fetchall()
-    print(resutl)
-    cur.close()
-    conn.close()
-    print(resutl)
-    return resutl
+    result = execute_mysql(sql_list,'',True,True)
+    return result
 
 def get_user(uid):
     uid = int(uid)
     print(type(uid))
     print(uid)
-    conn = MySQLdb.connect(host=MYSQL_HOST, port=MYSQL_PORT, user=MYSQL_USER, passwd=MYSQL_PASSWD, db=MYSQL_DB,
-                           charset=CHARSET)
-    cur = conn.cursor(cursors.DictCursor)
-    print(cur)
-    cur.execute(sql_update, (uid,))
-    resutl = cur.fetchone()
-    print(resutl)
-    cur.close()
-    conn.close()
-    return resutl
-
-def users_dump(users):
-    with open(data_user, 'wt') as f:
-        f.write(json.dumps(users))
-    return True
-
+    result = execute_mysql(sql_update,uid)
+    return result
 
 
 def vaild_login(username, passwd):
-    conn = MySQLdb.connect(host= MYSQL_HOST, port = MYSQL_PORT, user = MYSQL_USER, passwd = MYSQL_PASSWD, db = MYSQL_DB, charset = CHARSET)
-    print("查询成功")
-    cur = conn.cursor()
-    print(cur)
-    print('test')
-    cur.execute(sql_login,(username, passwd))
-    resutl = cur.fetchone()
-    cur.close()
-    conn.close()
+    args = (username, passwd)
+    resutl = execute_mysql(sql_login, args)
     return {"id": resutl[0], 'name': resutl[1]}  if resutl else None
 
 def delete_user(uid):
     uid = int(uid)
-    conn = MySQLdb.connect(host=MYSQL_HOST, port=MYSQL_PORT, user=MYSQL_USER, passwd=MYSQL_PASSWD, db=MYSQL_DB,charset=CHARSET)
-    print("查询成功")
-    cur = conn.cursor()
-    print(cur)
-    print('test')
-    cur.execute(sql_delete, (uid,))
-    conn.commit()
-    cur.close()
-    conn.close()
-
+    execute_mysql(sql_delete, uid, False)
     return True
 
 def vaild_update_user(params):
@@ -103,16 +66,7 @@ def vaild_update_user(params):
     sex = params.get('sex', '')
     tel = params.get('tel', '')
 
-    conn = MySQLdb.connect(host=MYSQL_HOST, port=MYSQL_PORT, user=MYSQL_USER, passwd=MYSQL_PASSWD, db=MYSQL_DB,
-                           charset=CHARSET)
-    cur = conn.cursor(cursors.DictCursor)
-    cur.execute(sql_update, (uid))
-    users = cur.fetchone()
-    cur.close()
-    conn.close()
-    users_info = users
-    print(users_info)
-
+    users_info = execute_mysql(sql_update)
     is_valid = True
     user = {}  #{id,name,age,sex,tel}
     errors = {}
@@ -151,18 +105,8 @@ def update_user(user):
     age = user['age']
     sex = user['sex']
     tel = user['tel']
-
-    conn = MySQLdb.connect(host=MYSQL_HOST, port=MYSQL_PORT, user=MYSQL_USER, passwd=MYSQL_PASSWD, db=MYSQL_DB,
-                           charset=CHARSET)
-    print("查询成功")
-    cur = conn.cursor()
-    print(cur)
-    print('test')
-    cur.execute(sql_update_vaild, (name, sex, age, tel, uid))
-    conn.commit()
-    cur.close()
-    conn.close()
-
+    args = (name, sex, age, tel, uid)
+    execute_mysql(sql_update_vaild, args, True, True)
     return True
 
 def get_user_data(params):
@@ -171,15 +115,8 @@ def get_user_data(params):
     sex = params.get('sex', '')
     tel = params.get('tel', '')
     password = params.get('password', '')
-    conn = MySQLdb.connect(host=MYSQL_HOST, port=MYSQL_PORT, user=MYSQL_USER, passwd=MYSQL_PASSWD, db=MYSQL_DB,
-                           charset=CHARSET)
-    cur = conn.cursor(cursors.DictCursor)
-    cur.execute(sql_list)
-    users = cur.fetchall()
-    cur.close()
-    conn.close()
-    users = users
 
+    users = execute_mysql(sql_list, '', True, True)
     is_valid = True
     user = {}  # {id,name,age,sex,tel}
     errors = {}
@@ -212,25 +149,15 @@ def add_user(user):
     sex = user['sex']
     tel = user['tel']
     password = user['password']
-
-    conn = MySQLdb.connect(host=MYSQL_HOST, port=MYSQL_PORT, user=MYSQL_USER, passwd=MYSQL_PASSWD, db=MYSQL_DB,
-                           charset=CHARSET)
-    cur = conn.cursor()
-    cur.execute(sql_insert, (name, sex, age, tel, password))
-    conn.commit()
-    cur.close()
-    conn.close()
+    agrs = (name, sex, age, tel, password)
+    execute_mysql(sql_insert, agrs, False)
     return True
+
 
 def passwd(uid, pd):
-    conn = MySQLdb.connect(host=MYSQL_HOST, port=MYSQL_PORT, user=MYSQL_USER, passwd=MYSQL_PASSWD, db=MYSQL_DB,
-                          charset=CHARSET)
-    cur = conn.cursor(cursors.DictCursor)
-    cur.execute(sql_passwd, (pd, uid))
-    conn.commit()
-    cur.close()
-    conn.close()
-
+    agrs = (uid, pd)
+    execute_mysql(sql_passwd, agrs, False)
     return True
+
 if __name__ == '__main__':
     get_user()
