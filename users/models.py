@@ -5,14 +5,6 @@ import MySQLdb
 from MySQLdb import cursors
 # Create your models here.
 
-#导入数据
-data_user = "user.data.json"
-MYSQL_HOST = '127.0.0.1'
-MYSQL_PORT = 3306
-MYSQL_USER = 'root'
-MYSQL_PASSWD = 'redhat'
-MYSQL_DB = 'cmdb'
-CHARSET = 'utf8'
 # conn = MySQLdb.connect(host='127.0.0.1', port=3306, user='root', passwd='redhat', db='cmdb',charset='utf8')
 # daya_user = conn.cursor()
 sql_login = "select id,name,age,sex,tel from users where name=%s and password=%s limit 1;"
