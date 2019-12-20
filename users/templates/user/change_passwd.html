@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>修改用户密码</title>
+</head>
+<body>
+    当前登录用户为:{{ request.session.user.name }}
+    <form action={% url 'users:update_passwd' %} method="POST">
+        {% csrf_token %}
+
+        修改密码:<input type="password", name="password", value="">
+        <input type="submit", value="修改密码">
+
+    </form>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>登录</title>
+</head>
+<body>
+    <form action={% url 'users:login' %} method="POST">
+        {% if errors %}
+        {% for error in errors.values %}
+            {{ error }}
+        {% endfor %}
+        {% endif %}
+
+        {% csrf_token %}
+        <br>
+        用户名：<input type="text" value="kk", name="username"> <br>
+        密码：<input type="password", value="123", name="passwd"> <br>
+        <input type="submit" value="登录">
+    </form>
+
+
+
+
+
+</body>
+</html>
