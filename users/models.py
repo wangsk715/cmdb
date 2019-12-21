@@ -8,7 +8,7 @@ from users.dbuntils import execute_mysql
 
 # conn = MySQLdb.connect(host='127.0.0.1', port=3306, user='root', passwd='redhat', db='cmdb',charset='utf8')
 # daya_user = conn.cursor()
-sql_login = "select id,name,age,sex,tel from users where name=%s and password=%s limit 1;"
+sql_login = '''select id,name,age,sex,tel from users where name=%s and password=%s limit 1;'''
 sql_list = '''
             select id,name,sex,age,tel
             from users;
@@ -38,25 +38,25 @@ sql_passwd = '''
             where id=%s;
             '''
 def get_users():
-    result = execute_mysql(sql_list,'',True,True)
+    cnt,result = execute_mysql(sql_list,{},True,True)
     return result
 
 def get_user(uid):
-    uid = int(uid)
-    print(type(uid))
-    print(uid)
-    result = execute_mysql(sql_update,uid)
+
+    cnt,result = execute_mysql(sql_update, (uid, ))
     return result
 
 
 def vaild_login(username, passwd):
     args = (username, passwd)
-    resutl = execute_mysql(sql_login, args)
-    return {"id": resutl[0], 'name': resutl[1]}  if resutl else None
+    print(sql_login)
+    cnt,resutl = execute_mysql(sql_login, args)
+    print(resutl,'11')
+    return {"id": resutl['id'], 'name': resutl['name']}  if resutl else None
 
 def delete_user(uid):
     uid = int(uid)
-    execute_mysql(sql_delete, uid, False)
+    cnt,restult = execute_mysql(sql_delete, (uid,), False)
     return True
 
 def vaild_update_user(params):
@@ -66,35 +66,35 @@ def vaild_update_user(params):
     sex = params.get('sex', '')
     tel = params.get('tel', '')
 
-    users_info = execute_mysql(sql_update)
+    cnt,users = execute_mysql(sql_list,{}, True, True)
     is_valid = True
     user = {}  #{id,name,age,sex,tel}
     errors = {}
+    for users_info in users:
+        #判断用户id是否存在
+        user['id'] = uid.strip()
+        if users_info.get('id') is None:
+            errors['id'] = '输入用户信息不存在'
+            is_valid = False
 
-    #判断用户id是否存在
-    user['id'] = uid.strip()
-    if users_info.get('id') is None:
-        errors['id'] = '输入用户信息不存在'
-        is_valid = False
+        user['name'] = name
+        if users_info['name'] == user['name'] and users_info['id'] != int(user['id']):
+            errors['name'] = "用户名存在"
+            is_valid = False
 
-    user['name'] = name
-    if users_info['name'] == user['name'] and users_info['id'] != int(user['id']):
-        errors['name'] = "用户名存在"
-        is_valid = False
+        user['age'] = age
+        if not user['age'].isdigit():
+            errors['age'] = "年龄格式错误"
+            is_valid = False
 
-    user['age'] = age
-    if not user['age'].isdigit():
-        errors['age'] = "年龄格式错误"
-        is_valid = False
+        user['tel'] = tel
+        if not user['tel'].isdigit():
+            errors['tel'] = '电话格式错误'
+            is_valid  = False
 
-    user['tel'] = tel
-    if not user['tel'].isdigit():
-        errors['tel'] = '电话格式错误'
-        is_valid  = False
+        user['sex']  = sex
 
-    user['sex']  = sex
-
-    print(user)
+        print(user)
 
     return is_valid, user, errors
 
@@ -106,7 +106,7 @@ def update_user(user):
     sex = user['sex']
     tel = user['tel']
     args = (name, sex, age, tel, uid)
-    execute_mysql(sql_update_vaild, args, True, True)
+    cnt, result = execute_mysql(sql_update_vaild, args, True, True)
     return True
 
 def get_user_data(params):
@@ -116,7 +116,7 @@ def get_user_data(params):
     tel = params.get('tel', '')
     password = params.get('password', '')
 
-    users = execute_mysql(sql_list, '', True, True)
+    cnt,users = execute_mysql(sql_list, '', True, True)
     is_valid = True
     user = {}  # {id,name,age,sex,tel}
     errors = {}
@@ -150,13 +150,13 @@ def add_user(user):
     tel = user['tel']
     password = user['password']
     agrs = (name, sex, age, tel, password)
-    execute_mysql(sql_insert, agrs, False)
+    cnt,users = execute_mysql(sql_insert, agrs, False)
     return True
 
 
 def passwd(uid, pd):
-    agrs = (uid, pd)
-    execute_mysql(sql_passwd, agrs, False)
+    agrs = (pd, uid)
+    cnt, users = execute_mysql(sql_passwd, agrs, False)
     return True
 
 if __name__ == '__main__':

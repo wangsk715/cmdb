@@ -65,8 +65,6 @@ def update(request):
         return redirect('users:login')
 
     is_vaild, user, errors = vaild_update_user(request.POST)
-    print(is_vaild)
-    print('11',user, '1')
     if is_vaild:
         update_user(user)
         return redirect('users:index')
