@@ -4,8 +4,10 @@ from django.db import models
 import MySQLdb
 from MySQLdb import cursors
 # Create your models here.
-from users.dbuntils import execute_mysql
+import hashlib
+from users.dbuntils import Conndb
 
+print('test')
 # conn = MySQLdb.connect(host='127.0.0.1', port=3306, user='root', passwd='redhat', db='cmdb',charset='utf8')
 # daya_user = conn.cursor()
 sql_login = '''select id,name,age,sex,tel from users where name=%s and password=%s limit 1;'''
@@ -38,25 +40,28 @@ sql_passwd = '''
             where id=%s;
             '''
 def get_users():
-    cnt,result = execute_mysql(sql_list,{},True,True)
+    cnt,result = Conndb.execute_mysql(sql_list,{},True,True)
     return result
 
 def get_user(uid):
 
-    cnt,result = execute_mysql(sql_update, (uid, ))
+    cnt,result = Conndb.execute_mysql(sql_update, (uid, ))
     return result
 
 
 def vaild_login(username, passwd):
-    args = (username, passwd)
+    md5 = hashlib.md5()
+    md5.update(passwd.encode('utf-8'))
+    passwd = md5.hexdigest()
     print(sql_login)
-    cnt,resutl = execute_mysql(sql_login, args)
+    args = (username, passwd)
+    cnt,resutl = Conndb.execute_mysql(sql_login, args)
     print(resutl,'11')
     return {"id": resutl['id'], 'name': resutl['name']}  if resutl else None
 
 def delete_user(uid):
     uid = int(uid)
-    cnt,restult = execute_mysql(sql_delete, (uid,), False)
+    cnt,restult = Conndb.execute_mysql(sql_delete, (uid,), False)
     return True
 
 def vaild_update_user(params):
@@ -66,7 +71,7 @@ def vaild_update_user(params):
     sex = params.get('sex', '')
     tel = params.get('tel', '')
 
-    cnt,users = execute_mysql(sql_list,{}, True, True)
+    cnt,users = Conndb.execute_mysql(sql_list,{}, True, True)
     is_valid = True
     user = {}  #{id,name,age,sex,tel}
     errors = {}
@@ -106,7 +111,7 @@ def update_user(user):
     sex = user['sex']
     tel = user['tel']
     args = (name, sex, age, tel, uid)
-    cnt, result = execute_mysql(sql_update_vaild, args, True, True)
+    cnt, result = Conndb.execute_mysql(sql_update_vaild, args, True, True)
     return True
 
 def get_user_data(params):
@@ -116,7 +121,7 @@ def get_user_data(params):
     tel = params.get('tel', '')
     password = params.get('password', '')
 
-    cnt,users = execute_mysql(sql_list, '', True, True)
+    cnt,users = Conndb.execute_mysql(sql_list, '', True, True)
     is_valid = True
     user = {}  # {id,name,age,sex,tel}
     errors = {}
@@ -149,14 +154,21 @@ def add_user(user):
     sex = user['sex']
     tel = user['tel']
     password = user['password']
+
+    md5 = hashlib.md5()
+    md5.update(password.encode('utf-8'))
+    password = md5.hexdigest()
     agrs = (name, sex, age, tel, password)
-    cnt,users = execute_mysql(sql_insert, agrs, False)
+    cnt,users = Conndb.execute_mysql(sql_insert, agrs, False)
     return True
 
 
 def passwd(uid, pd):
+    md5 = hashlib.md5()
+    md5.update(pd.encode('utf-8'))
+    pd = md5.hexdigest()
     agrs = (pd, uid)
-    cnt, users = execute_mysql(sql_passwd, agrs, False)
+    cnt, users = Conndb.execute_mysql(sql_passwd, agrs, False)
     return True
 
 if __name__ == '__main__':
