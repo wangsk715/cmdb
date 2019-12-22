@@ -39,14 +39,17 @@ sql_passwd = '''
             set password=%s
             where id=%s;
             '''
+
+user_list_models = ('id', 'name', 'sex', 'age', 'tel')
+
 def get_users():
     cnt,result = Conndb.execute_mysql(sql_list,{},True,True)
-    return result
+    return (dict(zip(user_list_models,users)) for users in result)
 
 def get_user(uid):
 
     cnt,result = Conndb.execute_mysql(sql_update, (uid, ))
-    return result
+    return dict(zip(user_list_models,result))
 
 
 def vaild_login(username, passwd):
@@ -57,7 +60,7 @@ def vaild_login(username, passwd):
     args = (username, passwd)
     cnt,resutl = Conndb.execute_mysql(sql_login, args)
     print(resutl,'11')
-    return {"id": resutl['id'], 'name': resutl['name']}  if resutl else None
+    return dict(zip(('id', 'name'), resutl ))  if resutl else None
 
 def delete_user(uid):
     uid = int(uid)
@@ -72,6 +75,7 @@ def vaild_update_user(params):
     tel = params.get('tel', '')
 
     cnt,users = Conndb.execute_mysql(sql_list,{}, True, True)
+    users = (dict(zip(user_list_models, user)) for user in users)
     is_valid = True
     user = {}  #{id,name,age,sex,tel}
     errors = {}
@@ -122,6 +126,8 @@ def get_user_data(params):
     password = params.get('password', '')
 
     cnt,users = Conndb.execute_mysql(sql_list, '', True, True)
+
+    users = (dict(zip(user_list_models, user)) for user in users)
     is_valid = True
     user = {}  # {id,name,age,sex,tel}
     errors = {}
